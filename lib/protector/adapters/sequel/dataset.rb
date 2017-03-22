@@ -24,10 +24,10 @@ module Protector
           end
         end
 
-        included do |klass|
+        def self.prepended(base)
           include Protector::DSL::Base
 
-          alias_method_chain :each, :protector
+          #alias_method_chain :each, :protector
         end
 
         def creatable?
@@ -44,21 +44,22 @@ module Protector
         end
 
         # Substitutes `row_proc` with {Protector} and injects protection scope
-        def each_with_protector(*args, &block)
-          return each_without_protector(*args, &block) unless protector_subject?
+
+        def each(*args, &block)
+          return super(*args, &block) unless protector_subject?
 
           relation = protector_defend_graph(clone, protector_subject)
           relation = protector_meta.eval_scope_procs(relation) if protector_meta.scoped?
 
           relation.row_proc = Restrictor.new(protector_subject, relation.row_proc)
-          relation.each_without_protector(*args, &block)
+          relation.method(:each).super_method.call(*args, &block)
         end
 
         # Injects protection scope for every joined graph association
         def protector_defend_graph(relation, subject)
           return relation unless @opts[:eager_graph]
 
-          @opts[:eager_graph][:reflections].each do |association, reflection|
+          @opts[:eager_graph][:reflections].each do |_, reflection|
             model = reflection[:cache][:class] if reflection[:cache].is_a?(Hash) && reflection[:cache][:class]
             model = reflection[:class_name].constantize unless model
             meta  = model.protector_meta.evaluate(subject)

@@ -11,8 +11,8 @@ module Protector
         return false unless defined?(::Sequel)
 
         ::Sequel::Model.send :include, Protector::Adapters::Sequel::Model
-        ::Sequel::Dataset.send :include, Protector::Adapters::Sequel::Dataset
-        ::Sequel::Model::Associations::EagerGraphLoader.send :include, Protector::Adapters::Sequel::EagerGraphLoader
+        ::Sequel::Dataset.send :prepend, Protector::Adapters::Sequel::Dataset
+        ::Sequel::Model::Associations::EagerGraphLoader.send :prepend, Protector::Adapters::Sequel::EagerGraphLoader
       end
 
       def self.is?(instance)

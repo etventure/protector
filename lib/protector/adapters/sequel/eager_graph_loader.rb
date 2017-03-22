@@ -3,13 +3,8 @@ module Protector
     module Sequel
       # Patches `Sequel::Model::Associations::EagerGraphLoader`
       module EagerGraphLoader extend ActiveSupport::Concern
-
-        included do
-          alias_method_chain :initialize, :protector
-        end
-
-        def initialize_with_protector(dataset)
-          initialize_without_protector(dataset)
+        def initialize(dataset)
+          super(dataset)
 
           if dataset.protector_subject?
             @row_procs.each do |k, v|
